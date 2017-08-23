@@ -1,0 +1,16 @@
+{
+  "name": "monoka",
+  "version": "1.0.0",
+  "author": "bei2",
+  "main": "src/main.js",
+  "scripts": {
+    "publish": "npm run build && npm run upload",
+    "build": "npm run tsc",
+    "tsc": "tsc",
+    "upload": "gapps upload"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "@types/google-apps-script": "0.0.13"
+  }
+}
