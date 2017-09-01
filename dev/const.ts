@@ -8,7 +8,7 @@ namespace MonokaConst {
 }
 
 namespace MonokaConst.API {
-    export const VERSION = "1.0";
+    export const VERSION = "4";
 }
 
 namespace MonokaConst.API.STATUS {
