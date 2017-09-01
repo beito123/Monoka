@@ -33,6 +33,8 @@ class HihumiParser implements Parser {
 				onlinePlayers: ""
 			};
 
+			var players: string = "";
+
 			var tr = this.getElementById(root, "players").getChild("tbody").getChildren("tr");
 			for (var i = 0; i < tr.length; i++) {
 				if((i % 2) === 0) {
@@ -52,10 +54,12 @@ class HihumiParser implements Parser {
 
 				var name: string = td[1].getValue();
 
-				data.onlinePlayers += name + "/";
+				players += name + "/";
 			}
 
-			data.onlinePlayers = data.onlinePlayers.replace(/\s+$/, "");
+			if(players.length > 0) {
+				data.onlinePlayers = players.slice(0, -1);//Remove "/"
+			}
 		}
 
 		return data;

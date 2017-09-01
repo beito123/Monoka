@@ -15,8 +15,3 @@ type Info = {
 type WorldInfo = {
 	[key: string]: Info[]
 };
-
-type BaseResponse = {
-	status: number,
-	error: string
-};

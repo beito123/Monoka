@@ -2,56 +2,74 @@
 	Jagajaga by bei2
 */
 
-const APICONST = MonokaConst.API;
+type BaseResponse = {
+	status: number,
+	error: string,
+	result: Result
+};
+
+type Result = {//TODO: REWRITE FOR NEW METHOD....
+	error?: string
+};
+
+interface CollectResult extends Result {
+};
+
+interface WorldInfoResult extends Result {
+	data: any;
+};
 
 class APIResponse {
 
-	private status: number;
-	private error: string;
+	private response: BaseResponse;
 
-	public constructor(status?: number, error?: string) {
-		this.status = (status) ? status : APICONST.STATUS.SUCCESS;
-		this.error = (error) ? error : null;
+	public constructor(response?: BaseResponse) {
+		if(!response) {
+			response = {
+				status: APICONST.STATUS.SUCCESS,
+				error: null,
+				result: {}
+			};
+		}
+
+		this.response = response;
 	}
 
 	public getStatus(): number {
-		return this.status;
+		return this.response.status;
 	}
 
 	public setStatus(stat: number): void {
-		this.status = stat;
+		this.response.status = stat;
+	}
+
+	public hasError(): boolean {
+		if("error" in this.response.result) {
+			return this.response.result.error.length > 0;
+		}
+
+		return "error" in this.response && (this.response.error.length > 0);
 	}
 
 	public getError(): string {
-		return this.error;
+		return this.response.error;
 	}
 
 	public setError(err: string): void {
-		this.setStatus(APICONST.STATUS.SUCCESS);
+		this.setStatus(APICONST.STATUS.ERROR);
 
-		this.error = err;
+		this.response.error = err;
 	}
 
-	public getResponse(): BaseResponse {
-		return {
-			status: this.status,
-			error: null
-		}
-	}
-}
-
-class CollectResponse extends APIResponse {
-}
-
-class WorldInfoResponse extends APIResponse {
-
-	public data: WorldInfo;
-
-	public getData(): WorldInfo {
-		return this.data;
+	public getResult(): Result {
+		return this.response.result;
 	}
 
-	public setData(data: WorldInfo): void {
-		this.data = data;
+	public setResult(result: Result): void{
+		this.response.result = result;
+	}
+
+	public toJSON(): string {
+		return JSON.stringify(this.response);
 	}
 }

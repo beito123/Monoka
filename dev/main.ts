@@ -2,29 +2,102 @@
 	Jagajaga by bei2
 */
 
+//IF YOU USE MONOKA, PLEASE REMOVE THE UNDER COMMENT OUT (//).
+//const TAKEN = "";//your taken
+
 const worlds: {[key: string]: string} = {
+	"north": "http://123saba.fun/wiki/north",
+	"east": "http://123saba.fun/wiki/east",
+	"west": "http://123saba.fun/wiki/west",
 	"south": "http://123saba.fun/wiki/south",
 };
 
-function test() {
-	//getData("south", 0, 0);
-	Logger.log(collect("south"));
+function doGet(e: any) {
+	//HtmlService.createHtmlOutput(e.parameter.taken);
+
+	var response: APIResponse = new APIResponse();
+
+	var output = function(response: APIResponse){
+		return HtmlService.createHtmlOutput(response.toJSON());
+	};
+
+	var args: {[key: string]: string} = e.parameter;
+
+	if(!("taken" in args)) {
+		response.setError("Taken wasn't set in parameters.");
+
+		return output(response);
+	}
+
+	if(args.taken !== TAKEN) {
+		response.setError("The taken didn't match.");
+
+		return output(response);
+	}
+
+	if(!("type" in args)) {
+		response.setError("Type wasn't set in parameters.");
+
+		return output(response);
+	}
+
+	var type: string = args.type.toLowerCase();
+
+	var result: Result = {};
+	switch (type) {
+		case "collect":
+			if(!("world" in args)) {
+				result.error = "World wasn't set in parameters.";
+			}
+
+			result = collect(args.world);
+			break;
+		case "getdata":
+			if(!("world" in args)) {
+				result.error = "World wasn't set in parameters.";
+			}
+
+			if(!("every" in args)) {
+				result.error = "Every wasn't set in parameters.";
+			}
+
+			if(!("count" in args)) {
+				result.error = "Count wasn't set in parameters.";
+			}
+
+			result = getData(args.world, Number(args.every), Number(args.count));
+			break;
+		default:
+			response.setError("The type doesn't exist.");
+
+			return output(response);
+	}
+
+	if(result.error != null && result.error.length > 0) {
+		response.setError("Happened a error for " + args.type + ". Error: " + result.error);
+
+		return output(response);
+	}
+
+	response.setResult(result);
+
+	return output(response);
 }
 
-function collect(world: string): BaseResponse {
-	var result = new CollectResponse();
+function collect(world: string): CollectResult {
+	var result: CollectResult = {};
 
 	if(!worlds[world]) {
-		result.setError("The world doesn't exist.");
+		result.error = "The world doesn't exist.";
 
-		return result.getResponse();
+		return result;
 	}
 
 	var monoka = new Monoka(init());
 
 	try {
 		if(!monoka.collectWorldInfo(new HihumiParser(), world, worlds[world])) {
-			result.setError("Cloudn't collect data.");
+			result.error = "Cloudn't collect data.";
 		}
 	}catch(err) {
 		var msg: string = "Couldn't collect data. Error: ";
@@ -33,34 +106,36 @@ function collect(world: string): BaseResponse {
 			msg += err.message;
 		}
 
-		result.setError(msg);
+		result.error = msg;
 
 		throw err;//Debug
 	}
 	
-	return result.getResponse();
+	return result;
 }
 
-function getData(world: string, every: number, count: number): BaseResponse {
-	var result: WorldInfoResponse = new WorldInfoResponse();
+function getData(world: string, every: number, count: number): WorldInfoResult {
+	var result: WorldInfoResult = {
+		data: null
+	};
 
-	if(!worlds[world] && world === "all") {
-		result.setError("The world doesn't exist.");
+	if(!worlds[world] && world !== "all") {
+		result.error = "The world doesn't exist.";
 
-		return result.getResponse();
+		return result;
 	}
 
 	var monoka = new Monoka(init());
 
 	try {
-		var data: WorldInfo = {};
+		var data: WorldInfo;
 		if(world === "all") {
 			data = monoka.getAllWorldDataEvery(every, count);
 		} else {
 			data = monoka.getWorldDataEvery(world, every, count);
 		}
 
-		result.setData(data);
+		result.data = data;
 	}catch(err) {
 		var msg: string = "Couldn't collect data. Error: ";
 
@@ -68,12 +143,12 @@ function getData(world: string, every: number, count: number): BaseResponse {
 			msg += err.message;
 		}
 
-		result.setError(msg);
+		result.error = msg;
 
 		//throw err;
 	}
 	
-	return result.getResponse();
+	return result;
 }
 
 function init(): Provider {
